@@ -33,7 +33,7 @@ From the root folder of the project run:
 ```
 npm start &
 cd sc/server
-./sc_trans &
+./sc_serv &
 cd ../..
 cd songs
 liquidsoap ./play.liq &
