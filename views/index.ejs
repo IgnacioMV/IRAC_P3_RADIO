@@ -1,34 +1,61 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
+    <title>IRAC G02 Radio</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
   <center>
-    <h1>Bienvenido a <%= title %></h1>
+    <h1>Bienvenido a IRAC G02 Radio</h1>
     <p>La mejor radio de la ETSIT</p>
+    <p><a href="http://iracp3-g02.ddns.net:8000/listen.pls?sid=1">Escuchar</a></p>
+
+    <% if (title != "" && artist != "") { %>
+      <p>Añadida <%= artist %> - <%= title %> a la lista de reproducción.
+    <% } %>
     <form methods="get" actions="/">
-    	<input type="text" name="search" placeholder="Buscar en Youtube..."/>
+    	<input type="text" name="search" placeholder="Buscar música..."/>
     	<input type="submit" value="Buscar">
     </form>
+    <p>1. Busca </p>
+    <p>2. Agrega a la lista de reproducción</p>
+    <p>3. Disfruta</p>
     <% if (searchWords != "") { %>
     <table>
       <tr>
-        <th colspan="3">Resultados de: <%= searchWords %></th>
-    <% for (var key in body.items) { %>
+        <th colspan="4">Resultados de: <%= searchWords %></th>
+      </tr>
       <tr>
-        <td><%= body.items[key].snippet.title %> </td>
-        <td><img src="<%= body.items[key].snippet.thumbnails.default.url%>" alt="Smiley face" height="<%= body.items[key].snippet.thumbnails.default.height%>" width="<%= body.items[key].snippet.thumbnails.default.width%>"></td>
+        <td>Título</td>
+        <td>Artista</td>
+        <td>Álbum</td>
+      </tr>
+    <% for (var key in body.tracks.items) { %>
+      <tr>
+        <td><%= body.tracks.items[key].name %> </td>
+        <td><%= body.tracks.items[key].artists[0].name %></td>
+
+        <td><img src="<%= body.tracks.items[key].album.images[2].url%>" alt="Smiley face" height="<%= body.tracks.items[key].album.images[2].height%>" width="<%= body.tracks.items[key].album.images[2].width%>"></td>
         <td>
           <form methods="get" actions="/vd">
-            <input type="hidden" name="vd" value="<%= body.items[key].id.videoId %>">
+            <input type="hidden" name="vd" value="<%= body.tracks.items[key].id %>">
+	    <input type="hidden" name="hArtist" value="<%= body.tracks.items[key].artists[0].name %>">
+	    <input type="hidden" name="hTitle" value="<%= body.tracks.items[key].name %>">
             <input type="submit" value="Añadir a lista de reproducción">
           </form>
         </td>
       </tr>
     <% } %>
   </table>
+  <% } %>
+  <hr>
+  <h3>Lista de reproducción actual</h3>
+  <% for (var i in playlist) { %>
+    <% if (i == 0) { %>
+      <p>Sonando => <%= playlist[i].artist %> - <%= playlist[i].title %></p>
+    <% } else { %>
+      <p><%= playlist[i].artist %> - <%= playlist[i].title %></p>
+    <% } %>
   <% } %>
   </center>
   </body>

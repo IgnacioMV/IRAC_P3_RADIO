@@ -1,4 +1,22 @@
 #!/usr/bin/env node
+
+var Datastore = require('nedb');
+var fs = require('fs');
+
+db = new Datastore({ filename: __dirname+'/../songs/songs.db', autoload: true});
+
+if (!fs.existsSync(__dirname'/../songs/position')) {
+  fs.appendFile('position', 0);
+  db.findOne({position: 1}, function(err, doc) {
+    if (doc == null) {
+      var doc2 = {position: 1, title: 'Ride of the Valkyries', artist: 'Wilhelm Richard Wagner', songId: 'valkyries'};
+      var doc3 = {position: 0, title: 'Dummy', artist: 'Dummy', songId: 'dummy'};
+      db.insert(doc2, function(err, newDoc){});
+      db.insert(doc3, function(err, newDoc){});
+    }
+  });
+}
+
 var debug = require('debug')('searchServer');
 var app = require('../app');
 

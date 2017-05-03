@@ -1,71 +1,72 @@
 var express = require('express');
 var router = express.Router();
-var http = require('http');
 var needle = require('needle');
 var fs = require('fs');
-var youtubedl = require('youtube-dl');
 var exec = require('child_process').exec;
-var cmd1 = 'ffmpeg -i myvideo.mp4 -q:a 8 -vn 1.ogg -y';
-var cmd2 = 'ffmpeg -i myvideo.mp4 -q:a 8 -vn 2.ogg -y';
-var dotenv = require('dotenv');
-dotenv.load();
-var key = process.env.KEY;
+var Datastore = require('nedb');
 
+db = new Datastore({ filename: __dirname+'/../songs/songs.db', autoload: true});
+
+db.findOne({position: 1}, function(err, doc) {
+  if (doc == null) {
+    var doc2 = {position: 1, title: 'Ride of the Valkyries', artist: 'Wilhelm Richard Wagner', songId: 'valkyries'};
+    db.insert(doc2, function(err, newDoc){});
+  }
+});
 
 /* GET home page. */
 router.get('/', function(req, res) {
 
   var searchWords = req.query.search;
 
-  var video2Down = req.query.vd;
+  var song2Down = req.query.vd;
+  var artist = req.query.hArtist;
+  var title = req.query.hTitle;  
 
-  if (typeof video2Down != "undefined") {
+ fs.readFile(__dirname+'/../songs/position', 'utf8', function (err, data) {  
+  db.find({ position: {$gte: (parseInt(data))} }).sort({ position: 1 }).exec( function (err, docs) {
 
-    var video = youtubedl('http://www.youtube.com/watch?v='+video2Down,
-    // Optional arguments passed to youtube-dl.
-    ['--format=18'],
-    // Additional options can be given for calling `child_process.execFile()`.
-    { cwd: __dirname });
-    video.on('info', function(info) {
-      console.log('Download started');
-      console.log('filename: ' + info.filename);
-      console.log('size: ' + info.size);
-    });
+  if (typeof song2Down != "undefined") {
+    
+   db.findOne({songId: song2Down, position: {$gte: (parseInt(data))} }, function(err, doc) {
+    if (doc == null) {
+      console.log(artist+title);
 
-    video.pipe(fs.createWriteStream('myvideo.mp4'));
-
-    video.on('end', function() {
-      console.log('finished downloading!');
-      exec(cmd1, function(error, stdout, stderr) {
-        console.log("converted");
+      var i;
+      var count = 0;
+      require('fs').createReadStream(__dirname+'/../songs/songs.db')
+        .on('data', function(chunk) {
+        for (i=0; i < chunk.length; ++i)
+          if (chunk[i] == 10) count++;
+      })
+      .on('end', function() {
+        console.log('count: '+count);
+        var doc = {position: count, title: title, artist: artist, songId: song2Down};
+        db.insert(doc, function(err, newDoc){});
+        res.render('index', { title: 'IRAC Radio 2017', body: "", searchWords: "", title: title, artist: artist, playlist: docs });
       });
-    });
-
-    res.render('index', { title: 'IRAC Radio 2017', body: "", searchWords: "" });
-    return;
+    }
+   });
   }
-
-  console.log(searchWords);
 
   if (typeof searchWords == "undefined") {
     console.log("rendering basic index");
-    res.render('index', { title: 'IRAC Radio 2017', body: "", searchWords: "" });
+    res.render('index', { title: 'IRAC Radio 2017', body: "", searchWords: "", title: "", artist: "", playlist: docs });
+     
     return;
   }
   else {
     var searchWords2 = searchWords.replace(" ", "%20");
-    console.log(searchWords);
-    needle.get('https://www.googleapis.com/youtube/v3/search?part=snippet%20&videoCategories=music&type=video%20&maxResults=3&q='+searchWords2+'%20'+'&key='+key, function(error, response, body) {
+    needle.get('https://api.spotify.com/v1/search?q='+searchWords2+'&type=track', function(error, response, body) {
       if (!error) {
-        // body is an alias for `response.body`
-        //var test = JSON.parse(body);
-        console.log(body.items[0].id.videoId)
-        res.render('index', { title: 'IRAC Radio 2017', body: body, searchWords: searchWords });
-        return;
+        res.render('index', { title: 'IRAC Radio 2017', body: body, searchWords: searchWords, title: "", artist: "", playlist: docs });
+          
+	return;
       }
     });
   }
-
+  });
+ });
 });
 
 module.exports = router;
