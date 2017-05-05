@@ -4,3 +4,7 @@ npm-debug.log
 .env
 ls.log
 sc/server/logs
+songs/*
+!songs/play.liq
+!songs/nextsong.js
+!songs/valkyries.m4a

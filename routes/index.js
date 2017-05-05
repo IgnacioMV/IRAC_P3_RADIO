@@ -7,12 +7,17 @@ var Datastore = require('nedb');
 
 db = new Datastore({ filename: __dirname+'/../songs/songs.db', autoload: true});
 
-db.findOne({position: 1}, function(err, doc) {
-  if (doc == null) {
-    var doc2 = {position: 1, title: 'Ride of the Valkyries', artist: 'Wilhelm Richard Wagner', songId: 'valkyries'};
-    db.insert(doc2, function(err, newDoc){});
-  }
-});
+if (!fs.existsSync(__dirname+'/../songs/position')) {
+  fs.appendFile(__dirname+'/../songs/position', 0);
+  db.findOne({position: 1}, function(err, doc) {
+    if (doc == null) {
+      var doc2 = {position: 1, title: 'Ride of the Valkyries', artist: 'Wilhelm Richard Wagner', songId: 'valkyries'};
+      var doc3 = {position: 0, title: 'Dummy', artist: 'Dummy', songId: 'dummy'};
+      db.insert(doc2, function(err, newDoc){});
+      db.insert(doc3, function(err, newDoc){});
+    }
+  });
+}
 
 /* GET home page. */
 router.get('/', function(req, res) {

@@ -11,7 +11,7 @@ This project relies on Liquidsoap (http://savonet.sourceforge.net/), ffmpeg and 
 After that, run:
 
 ```
-git clone https://github.com/IgnacioMV/IRAC_P3_RADIO.git
+git clone https://github.com/IgnacioMV/irac_p3_radio.git
 cd irac_p3_radio
 npm install
 ```
@@ -34,8 +34,7 @@ From the root folder of the project run:
 npm start &
 cd sc/server
 ./sc_serv &
-cd ../..
-cd songs
+cd ../../songs
 liquidsoap ./play.liq &
 ```
 
